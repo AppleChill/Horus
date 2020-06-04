@@ -23,6 +23,9 @@ type Request struct {
 //yml設定
 var config = &conf{}
 
+// Client
+var client = &http.Client{}
+
 type conf struct {
 	MA1  float64 `yaml:"MA1"`
 	MA2  float64 `yaml:"MA2"`
@@ -33,6 +36,7 @@ type conf struct {
 	MAX  int     `yaml:"MAX"`
 	DAYS int     `yaml:"DAYS"`
 	LOT  float64 `yaml:"LOT"`
+	FILTER int     `yaml:"FILTER"`
 }
 
 func (c *conf) getConf() *conf {
@@ -59,20 +63,25 @@ func main() {
 
 		stockHistory := StockHistory(stockNumber)
 
-		if len(stockHistory) > config.MAX {
+		if len(stockHistory) > config.MAX + config.FILTER {
 			array1 := strings.Split(stockHistory, " ")
-			MA := strings.Split(array1[4], ",")
-			MV := strings.Split(array1[5], ",")
-			MA1 := AverageCalculation(MA, config.MA1)
-			MA2 := AverageCalculation(MA, config.MA2)
-			MA3 := AverageCalculation(MA, config.MA3)
+			if len(array1) > 5{
+				MA := strings.Split(array1[4], ",")
+				MA = MA[:len(MA)-config.FILTER]
+				MV := strings.Split(array1[5], ",")
+				MV = MV[:len(MV)-config.FILTER]
 
-			MV1 := AverageCalculation(MV, config.MV1)
-			MV2 := AverageCalculation(MV, config.MV2)
-			MV3 := AverageCalculation(MV, config.MV3)
+				MA1 := AverageCalculation(MA, config.MA1)
+				MA2 := AverageCalculation(MA, config.MA2)
+				MA3 := AverageCalculation(MA, config.MA3)
 
-			if MA1 > MA2 && MA2 > MA3 && MV1 > MV2 && MV2 > MV3 && Condition3(MV) == true {
-				fmt.Println(stockNumber + " " + stockName)
+				MV1 := AverageCalculation(MV, config.MV1)
+				MV2 := AverageCalculation(MV, config.MV2)
+				MV3 := AverageCalculation(MV, config.MV3)
+
+				if MA1 > MA2 && MA2 > MA3 && MV1 > MV2 && MV2 > MV3 && Condition3(MV) == true {
+					fmt.Println(stockNumber + " " + stockName)
+				}
 			}
 		}
 	}
@@ -93,8 +102,7 @@ func StockInfo() []string {
 
 // StockHistory 取得個股歷史資料
 func StockHistory(number string) string {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", "https://just2.entrust.com.tw/Z/ZC/ZCW/CZKC1.djbcd?a="+number+"&b=D&c="+strconv.Itoa(config.MAX), nil)
+	req, err := http.NewRequest("GET", "https://just2.entrust.com.tw/Z/ZC/ZCW/CZKC1.djbcd?a="+number+"&b=D&c="+strconv.Itoa(config.MAX + config.FILTER), nil)
 	if err != nil {
 		fmt.Println(err)
 		return ""
@@ -135,7 +143,7 @@ func Condition3(data []string) bool {
 				value = value + 1
 			}
 		}
-		if value == 5 {
+		if value == config.DAYS {
 			return true
 		}
 		return false

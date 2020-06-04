@@ -16,3 +16,4 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags -w main.go
 7. MAX: 查詢最大天數
 8. DAYS: 條件三的D
 9. LOT: 條件三的X
+10. FILTER: 忽略最近的天數，不含假日
