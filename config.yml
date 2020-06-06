@@ -7,4 +7,11 @@ MV3: 34
 MAX: 55
 DAYS: 3
 LOT: 5000
+Z: 1
+C: 1
+G: 50
+Role1: true
+Role2: true
+Role3: true
+Role4: true
 FILTER: 0
